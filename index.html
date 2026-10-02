@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Victor AI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 8px;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 650px;
+      height: 92vh;
+      background-color: #1e293b;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .header-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 90%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 0.92rem;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .bot-msg {
+      background-color: #334155;
+      color: #f8fafc;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .user-msg {
+      background: #0284c7;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .source-box {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .source-link {
+      color: #38bdf8;
+      text-decoration: underline;
+      word-break: break-all;
+    }
+
+    .typing {
+      font-style: italic;
+      color: #94a3b8;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background-color: #0f172a;
+      gap: 8px;
+      border-top: 1px solid #334155;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background-color: #1e293b;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #38bdf8;
+    }
+
+    button.send-btn {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.send-btn:hover {
+      background: #0284c7;
+    }
+
+    button.send-btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <header>
+      <div class="header-left">
+        <div class="status-dot"></div>
+        Victor AI
+      </div>
+      <div>
+        <button class="header-btn" id="saveBtn">Uložiť chat</button>
+        <button class="header-btn" id="clearBtn">Vymazať</button>
+      </div>
+    </header>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot-msg">Ahoj! Som Victor AI. Pýtaj sa ma na celebrity, pojmy (napr. <i>Marketing</i>, <i>Umelá inteligencia</i>), vedu alebo výpočty. Odpovedám podrobnými textami aj s priamym zdrojom.</div>
+    </div>
+
+    <form class="input-area" id="chatForm">
+      <input type="text" id="userInput" placeholder="Napíš správu pre Victor AI..." autocomplete="off" required>
+      <button type="submit" class="send-btn" id="sendBtn">Odoslať</button>
+    </form>
+  </div>
+
+  <script>
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", sender === "user" ? "user-msg" : "bot-msg");
+      msgDiv.innerHTML = text;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return msgDiv;
+    }
+
+    clearBtn.addEventListener("click", () => {
+      chatMessages.innerHTML = "";
+      addMessage("História chatu bola vymazaná.", "bot");
+    });
+
+    saveBtn.addEventListener("click", () => {
+      const messages = chatMessages.querySelectorAll(".message");
+      if (messages.length === 0) return;
+      let text = "=== Victor AI Záznam Chatu ===\n\n";
+      messages.forEach(m => {
+        const isUser = m.classList.contains("user-msg");
+        text += (isUser ? "Ty: " : "Victor AI: ") + m.textContent.trim() + "\n\n";
+      });
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "victor-ai-chat.txt";
+      a.click();
+    });
+
+    // Lokálna matematika
+    function tryMath(input) {
+      let expr = input.toLowerCase()
+        .replace(/^(koľko je|spočítaj|vypočítaj|\?)/gi, "")
+        .replace(/,/g, ".")
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/\^/g, "**")
+        .replace(/sqrt\(([^)]+)\)/g, "Math.sqrt($1)")
+        .trim();
+
+      if (/^[0-9+\-*/().\s*Math\.sqrt]+$/.test(expr) && /[0-9]/.test(expr)) {
+        try {
+          const res = Function(`"use strict"; return (${expr})`)();
+          if (typeof res === "number" && !isNaN(res) && isFinite(res)) {
+            return `Výsledok je: <b>${Math.round(res * 100000) / 100000}</b>`;
+          }
+        } catch(e){}
+      }
+      return null;
+    }
+
+    // Podrobné vyhľadávanie v slovenskej a českej/anglickej encyklopédii s dlhým textom a zdrojom
+    async function fetchDetailedArticle(term, lang = "sk") {
+      try {
+        // 1. Získať presný názov článku cez vyhľadávanie
+        const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&format=json&origin=*`;
+        const sRes = await fetch(searchUrl);
+        if (!sRes.ok) return null;
+        const sData = await sRes.json();
+        const firstHit = sData.query?.search?.[0];
+
+        if (!firstHit) return null;
+
+        const pageTitle = firstHit.title;
+
+        // 2. Stiahnuť plný úvodný text (extract)
+        const contentUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(pageTitle)}&format=json&origin=*`;
+        const cRes = await fetch(contentUrl);
+        if (!cRes.ok) return null;
+        const cData = await cRes.json();
+        const pages = cData.query?.pages;
+        const pageId = Object.keys(pages)[0];
+
+        if (pageId && pages[pageId].extract) {
+          const extract = pages[pageId].extract.trim();
+          const pageUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, "_"))}`;
+          return {
+            title: pageTitle,
+            text: extract,
+            url: pageUrl,
+            lang: lang.toUpperCase()
+          };
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    async function getDetailedResponse(query) {
+      const clean = query
+        .replace(/^(kto je|čo je|povedz mi o|vysvetli|popíš|definuj|hľadaj|vyhľadaj)\s+/gi, "")
+        .replace(/[?!.]+$/, "")
+        .trim();
+
+      // Najprv skúsime slovenskú verziu
+      let article = await fetchDetailedArticle(clean, "sk");
+
+      // Ak na SK nič nie je, skúsime českú (často má oveľa podrobnejšie texty)
+      if (!article) {
+        article = await fetchDetailedArticle(clean, "cs");
+      }
+
+      // Ak ide o svetové celebrity/témy, skúsime anglickú verziu
+      if (!article) {
+        article = await fetchDetailedArticle(clean, "en");
+      }
+
+      if (article && article.text.length > 30) {
+        return `<b>${article.title}</b><br><br>${article.text}<div class="source-box">📖 <b>Zdroj informácií:</b> <a class="source-link" href="${article.url}" target="_blank">${article.url}</a> (${article.lang} Encyklopédia)</div>`;
+      }
+
+      // Záložný odkaz na priame vyhľadávanie
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+      return `K tomuto výrazu som nenašiel ucelený článok.<br><br>Kompletné podrobnosti a zdroje nájdeš tu:<br>👉 <a class="source-link" href="${searchUrl}" target="_blank">Vyhľadať „${query}“ na Google</a>`;
+    }
+
+    async function handleMessage(text) {
+      const lower = text.toLowerCase().trim();
+
+      // 1. Matematické výpočty
+      const math = tryMath(text);
+      if (math) return math;
+
+      // 2. Bežné pozdravy a systémové funkcie
+      if (lower.includes("ahoj") || lower.includes("čau") || lower.includes("dobrý deň")) {
+        return "Ahoj! Som Victor AI. Čo by si chcel preskúmať alebo vyhľadať?";
+      }
+      if (lower.includes("čas") || lower.includes("hodín")) {
+        return `Práve je ${new Date().toLocaleTimeString("sk-SK", { hour: "2-digit", minute: "2-digit" })}.`;
+      }
+      if (lower.includes("dátum")) {
+        return `Dnes je ${new Date().toLocaleDateString("sk-SK")}.`;
+      }
+
+      // 3. Podrobné encyklopedické a faktické texty s odkazmi
+      return await getDetailedResponse(text);
+    }
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      userInput.value = "";
+      sendBtn.disabled = true;
+
+      const typingMsg = addMessage("Victor AI vyhľadáva informácie a zdroje...", "bot");
+      typingMsg.classList.add("typing");
+
+      try {
+        const reply = await handleMessage(message);
+        typingMsg.innerHTML = reply;
+        typingMsg.classList.remove("typing");
+      } catch (err) {
+        typingMsg.textContent = "Nastala chyba pri načítaní textu. Skús to znova.";
+        typingMsg.classList.remove("typing");
+      } finally {
+        sendBtn.disabled = false;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>
