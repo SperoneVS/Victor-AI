@@ -1,2 +1,4 @@
 # Victor-AI
-Free AI doesn't learn from your commands.
+Free AI that doesn't learn from your commands.
+Made by Victor🍋
+Idea from Gemini!
