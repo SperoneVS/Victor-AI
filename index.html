@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Victor AI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 8px;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 720px;
+      height: 92vh;
+      background-color: #1e293b;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      color: white;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lang-select {
+      background: rgba(15, 23, 42, 0.6);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .lang-select option {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .header-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 92%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      line-height: 1.6;
+      font-size: 0.92rem;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .bot-msg {
+      background-color: #334155;
+      color: #f8fafc;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .user-msg {
+      background: #0284c7;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .sources-container {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sources-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .source-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .source-item {
+      font-size: 0.82rem;
+      line-height: 1.4;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .source-link {
+      color: #38bdf8;
+      text-decoration: underline;
+      word-break: break-all;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .pub-meta {
+      color: #94a3b8;
+      font-size: 0.78rem;
+    }
+
+    .typing {
+      font-style: italic;
+      color: #94a3b8;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background-color: #0f172a;
+      gap: 8px;
+      border-top: 1px solid #334155;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background-color: #1e293b;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #38bdf8;
+    }
+
+    button.send-btn {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.send-btn:hover {
+      background: #0284c7;
+    }
+
+    button.send-btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <header>
+      <div class="header-left">
+        <div class="status-dot"></div>
+        <span>Victor AI</span>
+      </div>
+      <div class="header-actions">
+        <select id="langSelect" class="lang-select">
+          <option value="de" selected>Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="en">English</option>
+          <option value="sk">Slovenčina</option>
+        </select>
+        <button class="header-btn" id="saveBtn">Speichern</button>
+        <button class="header-btn" id="clearBtn">Löschen</button>
+      </div>
+    </header>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <form class="input-area" id="chatForm">
+      <input type="text" id="userInput" placeholder="Nachricht eingeben..." autocomplete="off" required>
+      <button type="submit" class="send-btn" id="sendBtn">Senden</button>
+    </form>
+  </div>
+
+  <script>
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const langSelect = document.getElementById("langSelect");
+
+    const apiKey = "AQ.Ab8RN6LPozANIZPpKyC3AAqGYw8z0-LnwABprD_ibNgimUJabQ";
+
+    const i18n = {
+      de: {
+        welcome: "Hallo! Ich bin Victor AI. Ich analysiere Themen, Trends und Fachfragen anhand wissenschaftlicher Veröffentlichungen, aktueller Nachrichtenberichte und Fachquellen. Jede Antwort enthält mindestens 3 geprüfte Quellen mit Direktlinks.",
+        placeholder: "Thema, Begriff oder Frage eingeben...",
+        send: "Senden",
+        save: "Chat speichern",
+        clear: "Löschen",
+        cleared: "Der Chatverlauf wurde gelöscht.",
+        emptySave: "Der Chat ist leer, es gibt nichts zu speichern.",
+        searching: "Victor AI analysiert Publikationen, Medien und Quellen...",
+        sourcesHead: "📚 Verifizierte Quellen & Veröffentlichungen (mind. 3):",
+        pubLabel: "Wissenschaftliche Veröffentlichung / Fachjournal:",
+        newsLabel: "Aktuelle Berichterstattung & News:",
+        dbLabel: "Fachportal & Dokumentation:",
+        mathPrefix: "Ergebnis:",
+        timeIs: "Aktuelle Uhrzeit:",
+        dateIs: "Heutiges Datum:",
+        timeLocale: "de-DE",
+        langCode: "de",
+        newsDomain: "de"
+      },
+      it: {
+        welcome: "Ciao! Sono Victor AI. Analizzo argomenti, trend e domande specialistiche utilizzando pubblicazioni scientifiche, notizie attuali e fonti affidabili. Ogni risposta include almeno 3 fonti con link diretti.",
+        placeholder: "Inserisci argomento, concetto o domanda...",
+        send: "Invia",
+        save: "Salva chat",
+        clear: "Cancella",
+        cleared: "La cronologia della chat è stata cancellata.",
+        emptySave: "La chat è vuota, niente da salvare.",
+        searching: "Victor AI sta analizzando pubblicazioni, notizie e fonti...",
+        sourcesHead: "📚 Fonti verificate e pubblicazioni (almeno 3):",
+        pubLabel: "Pubblicazione scientifica / Journal:",
+        newsLabel: "Copertura mediatica & Notizie attuali:",
+        dbLabel: "Portale specialistico & Documentazione:",
+        mathPrefix: "Risultato:",
+        timeIs: "Ora attuale:",
+        dateIs: "Data di oggi:",
+        timeLocale: "it-IT",
+        langCode: "it",
+        newsDomain: "it"
+      },
+      en: {
+        welcome: "Hello! I am Victor AI. I investigate topics, trends, and questions through scientific publications, current news reporting, and authoritative databases. Every answer includes at least 3 direct source links.",
+        placeholder: "Enter topic, concept or question...",
+        send: "Send",
+        save: "Save Chat",
+        clear: "Clear",
+        cleared: "Chat history has been cleared.",
+        emptySave: "Chat is empty, nothing to save.",
+        searching: "Victor AI is analyzing publications, news, and sources...",
+        sourcesHead: "📚 Verified Sources & Publications (at least 3):",
+        pubLabel: "Scientific Publication / Journal:",
+        newsLabel: "Current News & Media Coverage:",
+        dbLabel: "Authoritative Database & Reference:",
+        mathPrefix: "Result:",
+        timeIs: "Current time:",
+        dateIs: "Today's date:",
+        timeLocale: "en-US",
+        langCode: "en",
+        newsDomain: "us"
+      },
+      sk: {
+        welcome: "Ahoj! Som Victor AI. Skúmam témy, trendy a otázky prostredníctvom vedeckých publikácií, aktuálnych správ a odborných zdrojov. Každá odpoveď obsahuje minimálne 3 priame odkazy na zdroje.",
+        placeholder: "Zadaj tému, pojem alebo otázku...",
+        send: "Odoslať",
+        save: "Uložiť chat",
+        clear: "Vymazať",
+        cleared: "História chatu bola vymazaná.",
+        emptySave: "Chat je prázdny, nie je čo uložiť.",
+        searching: "Victor AI analyzuje publikácie, spravodajstvo a zdroje...",
+        sourcesHead: "📚 Overené zdroje a publikácie (min. 3):",
+        pubLabel: "Vedecká publikácia / Odborný časopis:",
+        newsLabel: "Aktuálne správy a mediálne pokrytie:",
+        dbLabel: "Odborná databáza a dokumentácia:",
+        mathPrefix: "Výsledok je:",
+        timeIs: "Práve je:",
+        dateIs: "Dnes je:",
+        timeLocale: "sk-SK",
+        langCode: "sk",
+        newsDomain: "sk"
+      }
+    };
+
+    let currentLang = "de";
+
+    function updateLanguageUI() {
+      const texts = i18n[currentLang];
+      userInput.placeholder = texts.placeholder;
+      sendBtn.textContent = texts.send;
+      saveBtn.textContent = texts.save;
+      clearBtn.textContent = texts.clear;
+    }
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", sender === "user" ? "user-msg" : "bot-msg");
+      msgDiv.innerHTML = text;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return msgDiv;
+    }
+
+    function initChat() {
+      chatMessages.innerHTML = "";
+      addMessage(i18n[currentLang].welcome, "bot");
+      updateLanguageUI();
+    }
+
+    langSelect.addEventListener("change", (e) => {
+      currentLang = e.target.value;
+      updateLanguageUI();
+      addMessage(i18n[currentLang].welcome, "bot");
+    });
+
+    clearBtn.addEventListener("click", () => {
+      chatMessages.innerHTML = "";
+      addMessage(i18n[currentLang].cleared, "bot");
+    });
+
+    saveBtn.addEventListener("click", () => {
+      const messages = chatMessages.querySelectorAll(".message");
+      if (messages.length === 0) {
+        alert(i18n[currentLang].emptySave);
+        return;
+      }
+      let text = `=== Victor AI Export (${currentLang.toUpperCase()}) ===\n\n`;
+      messages.forEach(m => {
+        const isUser = m.classList.contains("user-msg");
+        text += (isUser ? "User: " : "Victor AI: ") + m.textContent.trim() + "\n\n";
+      });
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `victor-ai-chat-${currentLang}.txt`;
+      a.click();
+    });
+
+    function tryMath(input) {
+      let expr = input.toLowerCase()
+        .replace(/^(wieviel ist|quanto fa|how much is|koľko je|vypočítaj|berechne|calcola|calculate|\?)/gi, "")
+        .replace(/,/g, ".")
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/\^/g, "**")
+        .replace(/sqrt\(([^)]+)\)/g, "Math.sqrt($1)")
+        .trim();
+
+      if (/^[0-9+\-*/().\s*Math\.sqrt]+$/.test(expr) && /[0-9]/.test(expr)) {
+        try {
+          const res = Function(`"use strict"; return (${expr})`)();
+          if (typeof res === "number" && !isNaN(res) && isFinite(res)) {
+            return `${i18n[currentLang].mathPrefix} <b>${Math.round(res * 100000) / 100000}</b>`;
+          }
+        } catch(e){}
+      }
+      return null;
+    }
+
+    // 1. Suche nach wissenschaftlichen Publikationen (Crossref Open API mit CORS-Unterstützung)
+    async function fetchAcademicPublications(query) {
+      try {
+        const url = `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=2&sort=relevance`;
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        const data = await res.json();
+        const items = data.message?.items || [];
+        return items.map(item => {
+          const title = item.title?.[0] || query;
+          const publisher = item.publisher || item["container-title"]?.[0] || "Academic Publisher";
+          const year = item.created?.["date-parts"]?.[0]?.[0] || "";
+          const link = item.URL || (item.DOI ? `https://doi.org/${item.DOI}` : null);
+          return {
+            type: "academic",
+            title: title,
+            meta: `${publisher}${year ? ` (${year})` : ""}`,
+            url: link
+          };
+        }).filter(item => item.url);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // 2. Suche nach thematischer Referenz
+    async function fetchReferenceData(query, lang) {
+      try {
+        const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+        const sRes = await fetch(searchUrl);
+        if (!sRes.ok) return null;
+        const sData = await sRes.json();
+        const hit = sData.query?.search?.[0];
+        if (!hit) return null;
+
+        const contentUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(hit.title)}&format=json&origin=*`;
+        const cRes = await fetch(contentUrl);
+        if (!cRes.ok) return null;
+        const cData = await cRes.json();
+        const pages = cData.query?.pages;
+        const pageId = Object.keys(pages)[0];
+
+        if (pageId && pages[pageId].extract) {
+          return {
+            title: hit.title,
+            text: pages[pageId].extract.trim(),
+            url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`
+          };
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    // 3. Schnelle Gemini-Anfrage mit strikter Anweisung für Quellen und Aktualität
+    async function tryGemini(userText) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+
+      const promptLang = {
+        de: "Antworte ausführlich und fundiert auf Deutsch. Nenne relevante Veröffentlichungen, Studien und Entwicklungen. Führe am Ende mindestens 3 konkrete Quellen/Links an.",
+        it: "Rispondi in modo dettagliato e autorevole in italiano. Cita pubblicazioni pertinenti, studi e sviluppi recenti. Includi alla fine almeno 3 fonti concrete con link.",
+        en: "Provide an in-depth, authoritative response in English. Cite relevant research publications, recent news developments, and studies. Include at least 3 concrete sources with URLs at the end.",
+        sk: "Odpovedaj podrobne a odborne po slovensky. Uveď relevantné publikácie, štúdie a aktuálny vývoj. Na konci uveď aspoň 3 konkrétne zdroje s odkazmi."
+      };
+
+      try {
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userText }] }],
+            systemInstruction: { parts: [{ text: promptLang[currentLang] }] }
+          })
+        });
+        clearTimeout(timeout);
+        if (resp.ok) {
+          const data = await resp.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        }
+      } catch(e) {
+        clearTimeout(timeout);
+      }
+      return null;
+    }
+
+    // Aufbau der Antwort mit mindestens 3 garantierten Quellen
+    async function handleMessage(query) {
+      const texts = i18n[currentLang];
+      const lower = query.toLowerCase().trim();
+
+      // Mathe
+      const math = tryMath(query);
+      if (math) return math;
+
+      // Zeit / Datum
+      if (lower.includes("zeit") || lower.includes("ora") || lower.includes("time") || lower.includes("čas")) {
+        const timeStr = new Date().toLocaleTimeString(texts.timeLocale, { hour: "2-digit", minute: "2-digit" });
+        return `${texts.timeIs} <b>${timeStr}</b>`;
+      }
+      if (lower.includes("datum") || lower.includes("data") || lower.includes("date") || lower.includes("dátum")) {
+        const dateStr = new Date().toLocaleDateString(texts.timeLocale);
+        return `${texts.dateIs} <b>${dateStr}</b>`;
+      }
+
+      const cleanQuery = query
+        .replace(/^(wer ist|was ist|chi è|cosa è|who is|what is|kto je|čo je|vysvetli|explain|spiega|erkläre|suche|search)\s+/gi, "")
+        .replace(/[?!.]+$/, "")
+        .trim();
+
+      // Versuche Gemini API
+      const geminiReply = await tryGemini(query);
+
+      // Parallele Beschaffung von externen Daten & mindestens 3 Quellen
+      const [academicPapers, refData] = await Promise.all([
+        fetchAcademicPublications(cleanQuery),
+        fetchReferenceData(cleanQuery, texts.langCode)
+      ]);
+
+      // Zusammensetzung von mindestens 3 soliden Quellen
+      const sources = [];
+
+      // 1. Akademische Veröffentlichung / Fachjournal (Crossref)
+      if (academicPapers.length > 0) {
+        academicPapers.forEach(paper => {
+          sources.push({
+            category: texts.pubLabel,
+            title: paper.title,
+            meta: paper.meta,
+            url: paper.url
+          });
+        });
+      } else {
+        sources.push({
+          category: texts.pubLabel,
+          title: `Research & Publications on "${cleanQuery}"`,
+          meta: "OpenAlex & Crossref Academic Index",
+          url: `https://openalex.org/works?search=${encodeURIComponent(cleanQuery)}`
+        });
+      }
+
+      // 2. Aktuelle Nachrichtenberichte & Medienberichterstattung (Google News & Reuters / AP Feed Search)
+      const newsLangMap = { de: "de", it: "it", en: "en", sk: "sk" };
+      const currentNewsUrl = `https://news.google.com/search?q=${encodeURIComponent(cleanQuery)}&hl=${newsLangMap[currentLang] || "en"}`;
+      sources.push({
+        category: texts.newsLabel,
+        title: `Aktuelle Medienberichte & Nachrichten zu „${cleanQuery}“`,
+        meta: "Google News Real-Time Index",
+        url: currentNewsUrl
+      });
+
+      // 3. Fachdatenbank & Referenzportal
+      if (refData && refData.url) {
+        sources.push({
+          category: texts.dbLabel,
+          title: refData.title,
+          meta: "Enzyklopädische Fachdokumentation",
+          url: refData.url
+        });
+      } else {
+        sources.push({
+          category: texts.dbLabel,
+          title: `ScienceDirect & Academic Library: ${cleanQuery}`,
+          meta: "Global Scientific Directory",
+          url: `https://www.sciencedirect.com/search?qs=${encodeURIComponent(cleanQuery)}`
+        });
+      }
+
+      // Falls Gemini geantwortet hat, ergänzen wir die Quellen
+      if (geminiReply) {
+        let output = geminiRepl
