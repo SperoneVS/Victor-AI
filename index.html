@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Victor AI</title>
+  
+  <!-- PWA Verknüpfung -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712035.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 8px;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 720px;
+      height: 92vh;
+      background-color: #1e293b;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      color: white;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lang-select {
+      background: rgba(15, 23, 42, 0.6);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .lang-select option {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .header-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    #installBtn {
+      display: none;
+      background: #22c55e;
+      font-weight: 600;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 92%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      line-height: 1.6;
+      font-size: 0.92rem;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .bot-msg {
+      background-color: #334155;
+      color: #f8fafc;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .user-msg {
+      background: #0284c7;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .sources-container {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sources-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+
+    .source-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .source-item {
+      font-size: 0.82rem;
+      line-height: 1.4;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .source-link {
+      color: #38bdf8;
+      text-decoration: underline;
+      word-break: break-all;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .pub-meta {
+      color: #94a3b8;
+      font-size: 0.78rem;
+    }
+
+    .typing {
+      font-style: italic;
+      color: #94a3b8;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background-color: #0f172a;
+      gap: 8px;
+      border-top: 1px solid #334155;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background-color: #1e293b;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #38bdf8;
+    }
+
+    button.send-btn {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <header>
+      <div class="header-left">
+        <div class="status-dot"></div>
+        <span>Victor AI</span>
+      </div>
+      <div class="header-actions">
+        <select id="langSelect" class="lang-select">
+          <option value="de" selected>Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="en">English</option>
+          <option value="sk">Slovenčina</option>
+        </select>
+        <button class="header-btn" id="installBtn">App 📲</button>
+        <button class="header-btn" id="saveBtn">Speichern</button>
+        <button class="header-btn" id="clearBtn">Löschen</button>
+      </div>
+    </header>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <form class="input-area" id="chatForm">
+      <input type="text" id="userInput" placeholder="Nachricht eingeben..." autocomplete="off" required>
+      <button type="submit" class="send-btn" id="sendBtn">Senden</button>
+    </form>
+  </div>
+
+  <script>
+    // PWA Service Worker Registrierung
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const langSelect = document.getElementById("langSelect");
+
+    const apiKey = "AQ.Ab8RN6LPozANIZPpKyC3AAqGYw8z0-LnwABprD_ibNgimUJabQ";
+
+    const i18n = {
+      de: {
+        welcome: "Hallo! Ich bin Victor AI. Schreibe mir für Smalltalk, oder stelle eine Frage mit einem <b>Fragezeichen (?)</b>, um eine fundierte Fachrecherche mit mindestens 3 Quellen zu starten.",
+        placeholder: "Nachricht oder Frage (?) eingeben...",
+        send: "Senden",
+        save: "Speichern",
+        clear: "Löschen",
+        cleared: "Chatverlauf gelöscht.",
+        emptySave: "Der Chat ist leer.",
+        thinking: "Victor AI tippt...",
+        searching: "Victor AI recherchiert Quellen...",
+        sourcesHead: "📚 Verifizierte Quellen & Veröffentlichungen (mind. 3):",
+        pubLabel: "Publikation / Journal:",
+        newsLabel: "Aktuelle Berichte:",
+        dbLabel: "Fachportal:",
+        mathPrefix: "Ergebnis:",
+        timeIs: "Uhrzeit:",
+        dateIs: "Datum:",
+        timeLocale: "de-DE",
+        langCode: "de",
+        smalltalkPrompt: "Du bist Victor AI. Antworte freundlich, natürlich und prägnant auf Deutsch. Keine Quellen oder Fußnoten."
+      },
+      it: {
+        welcome: "Ciao! Sono Victor AI. Scrivimi per fare due chiacchiere, oppure fai una domanda con un <b>punto interrogativo (?)</b> per avviare una ricerca con almeno 3 fonti.",
+        placeholder: "Scrivi un messaggio o una domanda (?)...",
+        send: "Invia",
+        save: "Salva",
+        clear: "Cancella",
+        cleared: "Cronologia cancellata.",
+        emptySave: "La chat è vuota.",
+        thinking: "Victor AI sta digitando...",
+        searching: "Victor AI sta cercando fonti...",
+        sourcesHead: "📚 Fonti verificate e pubblicazioni (almeno 3):",
+        pubLabel: "Pubblicazione / Journal:",
+        newsLabel: "Notizie attuali:",
+        dbLabel: "Portale specialistico:",
+        mathPrefix: "Risultato:",
+        timeIs: "Ora:",
+        dateIs: "Data:",
+        timeLocale: "it-IT",
+        langCode: "it",
+        smalltalkPrompt: "Sei Victor AI. Rispondi amichevolmente in italiano. Non includere fonti."
+      },
+      en: {
+        welcome: "Hello! I am Victor AI. Chat casually, or end with a <b>question mark (?)</b> for an in-depth query with at least 3 sources.",
+        placeholder: "Type a message or ask a question (?)...",
+        send: "Send",
+        save: "Save",
+        clear: "Clear",
+        cleared: "Chat history cleared.",
+        emptySave: "Chat is empty.",
+        thinking: "Victor AI is typing...",
+        searching: "Victor AI is analyzing sources...",
+        sourcesHead: "📚 Verified Sources & Publications (at least 3):",
+        pubLabel: "Publication / Journal:",
+        newsLabel: "Current News:",
+        dbLabel: "Database:",
+        mathPrefix: "Result:",
+        timeIs: "Time:",
+        dateIs: "Date:",
+        timeLocale: "en-US",
+        langCode: "en",
+        smalltalkPrompt: "You are Victor AI. Reply naturally and concisely in English. Do not add sources."
+      },
+      sk: {
+        welcome: "Ahoj! Som Victor AI. Napíš mi pre bežnú debatu, alebo polož otázku s <b>otáznikom (?)</b> pre prieskum s minimálne 3 zdrojmi.",
+        placeholder: "Správa alebo otázka (?)...",
+        send: "Odoslať",
+        save: "Uložiť",
+        clear: "Vymazať",
+        cleared: "História vymazaná.",
+        emptySave: "Chat je prázdny.",
+        thinking: "Victor AI píše...",
+        searching: "Victor AI vyhľadáva zdroje...",
+        sourcesHead: "📚 Overené zdroje a publikácie (min. 3):",
+        pubLabel: "Publikácia / Časopis:",
+        newsLabel: "Aktuálne správy:",
+        dbLabel: "Odborný portál:",
+        mathPrefix: "Výsledok:",
+        timeIs: "Čas:",
+        dateIs: "Dátum:",
+        timeLocale: "sk-SK",
+        langCode: "sk",
+        smalltalkPrompt: "Voláš sa Victor AI. Odpovedaj stručne a priateľsky po slovensky. Žiadne zdroje."
+      }
+    };
+
+    let currentLang = "de";
+
+    function updateLanguageUI() {
+      const texts = i18n[currentLang];
+      userInput.placeholder = texts.placeholder;
+      sendBtn.textContent = texts.send;
+      saveBtn.textContent = texts.save;
+      clearBtn.textContent = texts.clear;
+    }
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", sender === "user" ? "user-msg" : "bot-msg");
+      msgDiv.innerHTML = text;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return msgDiv;
+    }
+
+    function initChat() {
+      chatMessages.innerHTML = "";
+      addMessage(i18n[currentLang].welcome, "bot");
+      updateLanguageUI();
+    }
+
+    langSelect.addEventListener("change", (e) => {
+      currentLang = e.target.value;
+      updateLanguageUI();
+      addMessage(i18n[currentLang].welcome, "bot");
+    });
+
+    clearBtn.addEventListener("click", () => {
+      chatMessages.innerHTML = "";
+      addMessage(i18n[currentLang].cleared, "bot");
+    });
+
+    saveBtn.addEventListener("click", () => {
+      const messages = chatMessages.querySelectorAll(".message");
+      if (messages.length === 0) {
+        alert(i18n[currentLang].emptySave);
+        return;
+      }
+      let text = `=== Victor AI Export (${currentLang.toUpperCase()}) ===\n\n`;
+      messages.forEach(m => {
+        const isUser = m.classList.contains("user-msg");
+        text += (isUser ? "User: " : "Victor AI: ") + m.textContent.trim() + "\n\n";
+      });
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `victor-ai-chat-${currentLang}.txt`;
+      a.click();
+    });
+
+    function tryMath(input) {
+      let expr = input.toLowerCase()
+        .replace(/^(wieviel ist|quanto fa|how much is|koľko je|vypočítaj|berechne|calcola|calculate|\?)/gi, "")
+        .replace(/,/g, ".").replace(/×/g, "*").replace(/÷/g, "/").replace(/\^/g, "**")
+        .replace(/sqrt\(([^)]+)\)/g, "Math.sqrt($1)").trim();
+
+      if (/^[0-9+\-*/().\s*Math\.sqrt]+$/.test(expr) && /[0-9]/.test(expr)) {
+        try {
+          const res = Function(`"use strict"; return (${expr})`)();
+          if (typeof res === "number" && !isNaN(res) && isFinite(res)) {
+            return `${i18n[currentLang].mathPrefix} <b>${Math.round(res * 100000) / 100000}</b>`;
+          }
+        } catch(e){}
+      }
+      return null;
+    }
+
+    async function fetchAcademicPublications(query) {
+      try {
+        const url = `https://api.crossref.org/works?query=${encodeURIComponent(query)}&rows=2&sort=relevance`;
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.message?.items || []).map(item => ({
+          type: "academic",
+          title: item.title?.[0] || query,
+          meta: `${item.publisher || "Publisher"} ${item.created?.["date-parts"]?.[0]?.[0] || ""}`,
+          url: item.URL || (item.DOI ? `https://doi.org/${item.DOI}` : null)
+        })).filter(i => i.url);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function fetchReferenceData(query, lang) {
+      try {
+        const sRes = await fetch(`https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
+        if (!sRes.ok) return null;
+        const sData = await sRes.json();
+        const hit = sData.query?.search?.[0];
+        if (!hit) return null;
+
+        const cRes = await fetch(`https://${lang}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(hit.title)}&format=json&origin=*`);
+        if (!cRes.ok) return null;
+        const cData = await cRes.json();
+        const pages = cData.query?.pages;
+        const pageId = Object.keys(pages)[0];
+
+        if (pageId && pages[pageId].extract) {
+          return {
+            title: hit.title,
+            text: pages[pageId].extract.trim(),
+            url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`
+          };
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    async function callGemini(userText, isQuery) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+
+      const promptLang = {
+        de: isQuery ? "Antworte fundiert auf Deutsch mit Bezug auf Studien/Quellen." : i18n.de.smalltalkPrompt,
+        it: isQuery ? "Rispondi in modo autorevole in italiano." : i18n.it.smalltalkPrompt,
+        en: isQuery ? "Provide an authoritative response in English." : i18n.en.smalltalkPrompt,
+        sk: isQuery ? "Odpovedaj odborne po slovensky." : i18n.sk.smalltalkPrompt
+      };
+
+      try {
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userText }] }],
+            systemInstruction: { parts: [{ text: promptLang[currentLang] }] }
+          })
+        });
+        clearTimeout(timeout);
+        if (resp.ok) {
+          const data = await resp.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        }
+      } catch(e) {
+        clearTimeout(timeout);
+      }
+      return null;
+    }
+
+    function getSmalltalkFallback() {
+      const responses = {
+        de: ["Hallo! Wie kann ich dir heute weiterhelfen?", "Alles klar! Wenn du eine konkrete Frage hast, setze ein Fragezeichen (?) für eine Recherche."],
+        it: ["Ciao! Come posso aiutarti oggi?", "Ricevuto! Se hai una domanda specifica, aggiungi un punto interrogativo (?)."],
+        en: ["Hello! How can I help you today?", "Understood! Whenever you have a specific question, end with a question mark (?)."],
+        sk: ["Ahoj! Ako ti môžem dnes pomôcť?", "Rozumiem! Ak ťa niečo konkrétne zaujíma, pridaj otáznik (?)."]
+      };
+      const list = responses[currentLang];
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    async function handleMessage(query) {
+      const texts = i18n[currentLang];
+      const lower = query.toLowerCase().trim();
+
+      const math = tryMath(query);
+      if (math) return math;
+
+      if (lower.includes("zeit") || lower.includes("ora") || lower.includes("time") || lower.includes("čas")) {
+        return `${texts.timeIs} <b>${new Date().toLocaleTimeString(texts.timeLocale, { hour: "2-digit", minute: "2-digit" })}</b>`;
+      }
+      if (lower.includes("datum") || lower.includes("data") || lower.includes("date") || lower.includes("dátum")) {
+        return `${texts.dateIs} <b>${new Date().toLocaleDateString(texts.timeLocale)}</b>`;
+      }
+
+      if (!query.includes("?")) {
+        const reply = await callGemini(query, false);
+        return reply || getSmalltalkFallback();
+      }
+
+      const cleanQuery = query.replace(/^(wer ist|was ist|chi è|cosa è|who is|what is|kto je|čo je)\s+/gi, "").replace(/[?!.]+$/, "").trim();
+      const geminiReply = await callGemini(query, true);
+      const [academicPapers, refData] = await Promise.all([
+        fetchAcademicPublications(cleanQuery),
+        fetchReferenceData(cleanQuery, texts.langCode)
+      ]);
+
+      const sources = [];
+      if (academicPapers.length > 0) {
+        academicPapers.forEach(p => sources.push({ category: texts.pubLabel, title: p.title, meta: p.meta, url: p.url }));
+      } else {
+        sources.push({ category: texts.pubLabel, title: `Publications on "${cleanQuery}"`, meta: "Academic Index", url: `https://openalex.org/works?search=${encodeURIComponent(cleanQuery)}` });
+      }
+
+      sources.push({
+        category: texts.newsLabel,
+        title: `News zu „${cleanQuery}“`,
+        meta: "Google News",
+        url: `https://news.google.com/search?q=${encodeURIComponent(cleanQuery)}&hl=${texts.langCode}`
+      });
+
+      if (refData && refData.url) {
+        sources.push({ category: texts.dbLabel, title: refData.title, meta: "Referenzdokumentation", url: refData.url });
+      } else {
+        sources.push({ category: texts.dbLabel, title: `Library: ${cleanQuery}`, meta: "ScienceDirect", url: `https://www.sciencedirect.com/search?qs=${encodeURIComponent(cleanQuery)}` });
+      }
+
+      let output = geminiReply || (refData && refData.text ? `<b>${refData.title}</b><br><br>${refData.text}` : `Recherche zu <b>${cleanQuery}</b>:`);
+      output += `<div class="sources-container"><div class="sources-title">${texts.sourcesHead}</div><ul class="source-list">`;
+      sources.slice(0, 3).forEach((s, idx) => {
+        output += `
+          <li class="source-item">
+            <div><b>[${idx + 1}] ${s.category}</b> ${s.title}</div>
+            <div class="pub-meta">${s.meta}</div>
+            <a class="source-link" href="${s.url}" target="_blank" rel="noopener noreferrer">${s.url}</a>
+          </li>
+        `;
+      });
+      output += `</ul></div>`;
+      return output;
+    }
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = userInput.value.trim();
+      if (!msg) return;
+
+      addMessage(msg, "user");
+      userInput.value = "";
+      sendBtn.disabled = true;
+
+      const typingMsg = addMessage(msg.includes("?") ? i18n[currentLang].searching : i18n[currentLang].thinking, "bot");
+      typingMsg.classList.add("typing");
+
+      try {
+        const reply = await handleMessage(msg);
+        typingMsg.innerHTML = reply;
+        typingMsg.classList.remove("typing");
+      } catch (err) {
+        typingMsg.textContent = "Fehler: " + err.message;
+        typingMsg.classList.remove("typing");
+      } finally {
+        sendBtn.disabled = false;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    });
+
+    initChat();
+  </script>
+</body>
+</html>
